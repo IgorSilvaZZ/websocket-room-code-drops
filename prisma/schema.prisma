@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Users {
+  id               String        @id @default(uuid())
+  username         String
+  connections      Connections[]
+  senderMessages   Messages[]    @relation("user_sender")
+  receiverMessages Messages[]    @relation("user_receiver")
+
+  @@map("users")
+}
+
+model Connections {
+  id        String @id @default(uuid())
+  socket_id String
+
+  users  Users?  @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@map("connections")
+}
+
+model Rooms {
+  id   String @id @default(uuid())
+  name String
+
+  @@map("rooms")
+}
+
+model Messages {
+  id   String @id @default(uuid())
+  text String
+
+  userSender   Users  @relation("user_sender", fields: [userSenderId], references: [id])
+  userSenderId String
+
+  userReceiver   Users? @relation("user_receiver", fields: [userReceiverId], references: [id])
+  userReceiverId String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@map("messages")
+}

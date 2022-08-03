@@ -1,4 +1,11 @@
-import { io } from "./http";
+import { io } from "../http";
+
+import { IDataSelectRoom } from "../dtos/IDataSelectRoom";
+import { IDataSendMessage } from "../dtos/IDataSendMessage";
+
+// Criar uma tabela de connections (para socket.id)
+// Criar uma tabela de salas
+// Criar uma tabela de messages, com fkUserReceiver podendo ser nulo e tento relacionamento com room
 
 interface IRoomUser {
   socket_id: string;
@@ -6,7 +13,7 @@ interface IRoomUser {
   room: string;
 }
 
-interface Message {
+interface IMessage {
   room: string;
   text: string;
   username: string;
@@ -15,7 +22,7 @@ interface Message {
 
 const users: IRoomUser[] = [];
 
-const messages: Message[] = [];
+const messages: IMessage[] = [];
 
 const getMessagesRoom = (room: string) => {
   const messagesRoom = messages.filter((message) => message.room === room);
@@ -24,32 +31,32 @@ const getMessagesRoom = (room: string) => {
 };
 
 io.on("connection", (socket) => {
-  socket.on("select_room", (data, callback) => {
+  socket.on("select_room", ({ username, room }: IDataSelectRoom, callback) => {
     // Colocar o usuario em alguma sala em especifica na conexão de socket
-    socket.join(data.room);
+    socket.join(room);
 
     const userInRoom = users.find(
-      (user) => user.username === data.username && user.room === data.room
+      (user) => user.username === username && user.room === room
     );
 
     if (userInRoom) {
       userInRoom.socket_id = socket.id;
     } else {
       users.push({
-        room: data.room,
-        username: data.username,
+        room: room,
+        username: username,
         socket_id: socket.id,
       });
     }
 
-    const messagesRoom = getMessagesRoom(data.room);
+    const messagesRoom = getMessagesRoom(room);
 
     callback(messagesRoom);
   });
 
-  socket.on("message", ({ room, text, username }) => {
+  socket.on("message", ({ room, text, username }: IDataSendMessage) => {
     // Salvar mensagens
-    const message: Message = {
+    const message: IMessage = {
       room,
       text,
       username,
