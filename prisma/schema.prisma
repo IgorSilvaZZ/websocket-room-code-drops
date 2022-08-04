@@ -34,6 +34,8 @@ model Rooms {
   id   String @id @default(uuid())
   name String
 
+  messages Messages[]
+
   @@map("rooms")
 }
 
@@ -44,8 +46,11 @@ model Messages {
   userSender   Users  @relation("user_sender", fields: [userSenderId], references: [id])
   userSenderId String
 
-  userReceiver   Users? @relation("user_receiver", fields: [userReceiverId], references: [id])
-  userReceiverId String
+  userReceiver   Users?  @relation("user_receiver", fields: [userReceiverId], references: [id])
+  userReceiverId String?
+
+  Rooms  Rooms?  @relation(fields: [roomId], references: [id])
+  roomId String?
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
