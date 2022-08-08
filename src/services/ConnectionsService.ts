@@ -10,7 +10,7 @@ export class ConnectionsService {
   }
 
   async create({
-    socket_id,
+    socketId,
     userId,
   }: ICreateConnection): Promise<Connections | null> {
     const connectionExists =
@@ -25,11 +25,20 @@ export class ConnectionsService {
       return connectionUpdate;
     } else {
       const connection = await this.connectionsRepository.create({
-        socket_id,
+        socketId,
         userId,
       });
 
       return connection;
     }
+  }
+
+  async updateSocketId(id: string, socket_id: string): Promise<Connections> {
+    const connection = await this.connectionsRepository.updateConnection({
+      id,
+      socket_id,
+    });
+
+    return connection;
   }
 }

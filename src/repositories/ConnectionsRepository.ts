@@ -5,15 +5,15 @@ import { ICreateConnection } from "../dtos/ICreateConnection";
 import { IUpdateConnection } from "../dtos/IUpdateConnection";
 
 export class ConnectionsRepository {
-  async create({ socket_id, userId }: ICreateConnection): Promise<Connections> {
+  async create({ socketId, userId }: ICreateConnection): Promise<Connections> {
     const connection = await client.connections.create({
-      data: { socket_id, userId },
+      data: { socket_id: socketId, userId },
     });
 
     return connection;
   }
 
-  async findByConnectionUserId(userId: string): Promise<Connections | null> {
+  async findByConnectionUserId(userId?: string): Promise<Connections | null> {
     const connection = await client.connections.findFirst({
       where: { userId },
     });

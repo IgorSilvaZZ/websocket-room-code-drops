@@ -6,8 +6,8 @@ export class MessagesRepository {
   async create({
     text,
     userSenderId,
-    roomId,
     userReceiverId,
+    roomId,
   }: ICreateMessage): Promise<Messages> {
     const message = await client.messages.create({
       data: {
@@ -25,6 +25,10 @@ export class MessagesRepository {
     const messages = await client.messages.findMany({
       where: {
         roomId,
+      },
+      include: {
+        userReceiver: true,
+        userSender: true,
       },
     });
 

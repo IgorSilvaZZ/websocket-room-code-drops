@@ -3,10 +3,10 @@ import { io } from "../http";
 import { IDataSelectRoom } from "../dtos/IDataSelectRoom";
 import { IDataSendMessage } from "../dtos/IDataSendMessage";
 
-// Criar uma tabela de connections (para socket.id)
-// Criar uma tabela de salas
-// Criar uma tabela de messages, com fkUserReceiver podendo ser nulo e tento relacionamento com room
-
+import { UsersServices } from "../services/UsersService";
+import { RoomsService } from "../services/RoomsService";
+import { MessagesService } from "../services/MessagesService";
+import { ConnectionsService } from "../services/ConnectionsService";
 interface IRoomUser {
   socket_id: string;
   username: string;
@@ -20,52 +20,63 @@ interface IMessage {
   createdAt: Date;
 }
 
-const users: IRoomUser[] = [];
-
-const messages: IMessage[] = [];
-
-const getMessagesRoom = (room: string) => {
-  const messagesRoom = messages.filter((message) => message.room === room);
-
-  return messagesRoom;
-};
-
 io.on("connection", (socket) => {
-  socket.on("select_room", ({ username, room }: IDataSelectRoom, callback) => {
-    // Colocar o usuario em alguma sala em especifica na conexão de socket
-    socket.join(room);
+  const usersServices = new UsersServices();
+  const connectionsServices = new ConnectionsService();
+  const roomsServices = new RoomsService();
+  const messagesServices = new MessagesService();
 
-    const userInRoom = users.find(
-      (user) => user.username === username && user.room === room
-    );
+  socket.on("access_chat", async ({ username }, callback) => {
+    const user = await usersServices.create(username);
 
-    if (userInRoom) {
-      userInRoom.socket_id = socket.id;
-    } else {
-      users.push({
-        room: room,
-        username: username,
-        socket_id: socket.id,
+    callback(user);
+  });
+
+  socket.on(
+    "select_room",
+    async ({ username, room }: IDataSelectRoom, callback) => {
+      // Cadastrar o usuario
+      const user = await usersServices.create(username);
+
+      // Conectar o usuario e dizer que ele está online
+      await connectionsServices.create({
+        socketId: socket.id,
+        userId: user?.id,
       });
+
+      // Criar a sala ou retornar o id da sala
+      const newRoom = await roomsServices.create(room);
+
+      // Colocar o usuario em alguma sala em especifica na conexão de socket
+      socket.join(newRoom.id);
+
+      // Listar as mensagens dessa sala
+      const messagesRoom = await messagesServices.listMessagesByRoom(
+        newRoom.id
+      );
+
+      callback(messagesRoom);
     }
+  );
 
-    const messagesRoom = getMessagesRoom(room);
+  socket.on(
+    "message",
+    async ({ room, text, userSenderId }: IDataSendMessage) => {
+      // Criando ou recuperando sala que contem no banco de dados
+      const { id: roomId } = await roomsServices.create(room);
 
-    callback(messagesRoom);
-  });
+      // Salvar mensagens
+      const message = await messagesServices.create({
+        roomId,
+        text,
+        userSenderId,
+      });
 
-  socket.on("message", ({ room, text, username }: IDataSendMessage) => {
-    // Salvar mensagens
-    const message: IMessage = {
-      room,
-      text,
-      username,
-      createdAt: new Date(),
-    };
+      // Listando todas as mensagens daquela sala apos ser criada uma nova
+      const messages = await messagesServices.listMessagesByRoom(roomId);
 
-    messages.push(message);
-
-    // Enviar para os usuarios da sala especifica
-    io.to(room).emit("message", message);
-  });
+      // Enviar para os usuarios da sala especifica
+      io.to(roomId).emit("message", messages);
+    }
+  );
 });

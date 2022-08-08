@@ -5,14 +5,18 @@ const urlSearch = new URLSearchParams(window.location.search);
 const username = urlSearch.get("username");
 const room = urlSearch.get("select_room");
 
-function createMessage(data) {
+let user = new Object();
+
+function createMessage({ text, userSender: { username }, created_at }) {
   const messagesDiv = document.getElementById("messages");
+
+  /* messagesDiv.innerHTML = ""; */
 
   messagesDiv.innerHTML += `
       <div class="new_message">
           <label class="form-label">
-              <strong>${data.username}</strong> <span>${data.text} - ${dayjs(
-    data.createdAt
+              <strong>${username}</strong> <span>${text} - ${dayjs(
+    created_at
   ).format("DD/MM HH:mm")}</span>
           </label>
       </div>
@@ -22,6 +26,16 @@ function createMessage(data) {
 document.getElementById(
   "username"
 ).innerHTML = `Olá ${username} - Você está na sala: ${room}`;
+
+socket.emit(
+  "access_chat",
+  {
+    username,
+  },
+  (data) => {
+    user = data;
+  }
+);
 
 socket.emit(
   "select_room",
@@ -45,7 +59,7 @@ document
       const data = {
         room,
         text,
-        username,
+        userSenderId: user.id,
       };
 
       event.target.value = "";
@@ -54,8 +68,12 @@ document
     }
   });
 
-socket.on("message", (data) => {
-  createMessage(data);
+socket.on("message", (messages) => {
+  document.getElementById("messages").innerHTML = "";
+
+  messages.forEach((message) => {
+    createMessage(message);
+  });
 });
 
 document.getElementById("logout").addEventListener("click", () => {
