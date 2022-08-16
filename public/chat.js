@@ -77,5 +77,9 @@ socket.on("message", (messages) => {
 });
 
 document.getElementById("logout").addEventListener("click", () => {
-  window.location.href = "index.html";
+  socket.emit("logout", { userId: user.id });
+
+  setTimeout(() => {
+    window.location.href = "index.html";
+  }, 1000);
 });

@@ -41,4 +41,12 @@ export class ConnectionsService {
 
     return connection;
   }
+
+  async findConnectionUser(user_id: string): Promise<Connections | null> {
+    const connection = await this.connectionsRepository.findByConnectionUserId(
+      user_id
+    );
+
+    return connection;
+  }
 }

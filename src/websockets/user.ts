@@ -7,18 +7,6 @@ import { UsersServices } from "../services/UsersService";
 import { RoomsService } from "../services/RoomsService";
 import { MessagesService } from "../services/MessagesService";
 import { ConnectionsService } from "../services/ConnectionsService";
-interface IRoomUser {
-  socket_id: string;
-  username: string;
-  room: string;
-}
-
-interface IMessage {
-  room: string;
-  text: string;
-  username: string;
-  createdAt: Date;
-}
 
 io.on("connection", (socket) => {
   const usersServices = new UsersServices();
@@ -79,4 +67,12 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("message", messages);
     }
   );
+
+  socket.on("logout", async ({ userId }) => {
+    const connection = await connectionsServices.findConnectionUser(userId);
+
+    if (connection) {
+      await connectionsServices.updateSocketId(connection.id, "");
+    }
+  });
 });
