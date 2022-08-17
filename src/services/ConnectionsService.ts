@@ -5,8 +5,18 @@ import { ConnectionsRepository } from "../repositories/ConnectionsRepository";
 export class ConnectionsService {
   private connectionsRepository: ConnectionsRepository;
 
+  private static INSTANCE: ConnectionsService;
+
   constructor() {
     this.connectionsRepository = new ConnectionsRepository();
+  }
+
+  public static getInstance(): ConnectionsService {
+    if (!ConnectionsService.INSTANCE) {
+      ConnectionsService.INSTANCE = new ConnectionsService();
+    }
+
+    return ConnectionsService.INSTANCE;
   }
 
   async create({
