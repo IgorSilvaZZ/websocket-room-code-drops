@@ -8,7 +8,7 @@
     <title>Socket IO</title>
   </head>
   <body>
-    <form action="chat.html">
+    <form action="chat.html" onsubmit="return handleSubmit()">
       <div class="container">
         <div class="row">
           <select name="select_room" id="select_room">
@@ -22,13 +22,22 @@
 
         <div class="row">
           <label for="form-label">Digite seu usuário</label>
-          <input type="text" name="username" placeholder="Username" />
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Username"
+          />
         </div>
 
         <div class="row">
-          <button type="submit" class="btn btn-primary mb-3">Entrar</button>
+          <button type="submit" id="btn_submit" class="btn btn-primary mb-3">
+            Entrar
+          </button>
         </div>
       </div>
     </form>
   </body>
+
+  <script src="index.js"></script>
 </html>

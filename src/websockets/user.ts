@@ -14,26 +14,36 @@ io.on("connection", (socket) => {
   const roomsServices = new RoomsService();
   const messagesServices = new MessagesService();
 
-  socket.on("access_chat", async ({ username }, callback) => {
-    const user = await usersServices.create(username);
-
-    callback(user);
-  });
-
   socket.on(
     "select_room",
     async ({ username, room }: IDataSelectRoom, callback) => {
       // Cadastrar o usuario
-      const user = await usersServices.create(username);
+      const userExists = await usersServices.findByUsername(username);
+
+      const user = userExists
+        ? userExists
+        : await usersServices.create(username);
 
       // Conectar o usuario e dizer que ele está online
-      await connectionsServices.create({
-        socketId: socket.id,
-        userId: user?.id,
-      });
+      const connection = await connectionsServices.findConnectionUser(
+        String(user?.id)
+      );
+
+      if (connection) {
+        await connectionsServices.updateSocketId(connection.id, socket.id);
+      } else {
+        await connectionsServices.create({
+          socketId: socket.id,
+          userId: user?.id,
+        });
+      }
 
       // Criar a sala ou retornar o id da sala
-      const newRoom = await roomsServices.create(room);
+      const roomExists = await roomsServices.findByNameRoom(room);
+
+      const newRoom = roomExists
+        ? roomExists
+        : await roomsServices.create(room);
 
       // Colocar o usuario em alguma sala em especifica na conexão de socket
       socket.join(newRoom.id);
@@ -43,7 +53,7 @@ io.on("connection", (socket) => {
         newRoom.id
       );
 
-      callback(messagesRoom);
+      callback(messagesRoom, user);
     }
   );
 
@@ -51,10 +61,12 @@ io.on("connection", (socket) => {
     "message",
     async ({ room, text, userSenderId }: IDataSendMessage) => {
       // Criando ou recuperando sala que contem no banco de dados
-      const { id: roomId } = await roomsServices.create(room);
+      const roomExists = await roomsServices.findByNameRoom(room);
+
+      const roomId = roomExists?.id;
 
       // Salvar mensagens
-      const message = await messagesServices.create({
+      await messagesServices.create({
         roomId,
         text,
         userSenderId,
@@ -64,7 +76,7 @@ io.on("connection", (socket) => {
       const messages = await messagesServices.listMessagesByRoom(roomId);
 
       // Enviar para os usuarios da sala especifica
-      io.to(roomId).emit("message", messages);
+      io.to(String(roomId)).emit("message", messages);
     }
   );
 

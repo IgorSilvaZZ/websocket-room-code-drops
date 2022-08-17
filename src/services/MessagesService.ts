@@ -25,7 +25,7 @@ export class MessagesService {
     return message;
   }
 
-  async listMessagesByRoom(roomId: string): Promise<Messages[]> {
+  async listMessagesByRoom(roomId?: string): Promise<Messages[]> {
     const messages = await this.messagesRepository.listMessagesByRoomId(roomId);
 
     return messages;

@@ -9,14 +9,14 @@ export class RoomsService {
   }
 
   async create(name: string): Promise<Rooms> {
-    const roomExists = await this.roomsRepository.findByName(name);
+    const room = await this.roomsRepository.create(name);
 
-    if (roomExists) {
-      return roomExists;
-    } else {
-      const room = await this.roomsRepository.create(name);
+    return room;
+  }
 
-      return room;
-    }
+  async findByNameRoom(name: string): Promise<Rooms | null> {
+    const room = await this.roomsRepository.findByName(name);
+
+    return room;
   }
 }

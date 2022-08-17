@@ -21,7 +21,7 @@ export class MessagesRepository {
     return message;
   }
 
-  async listMessagesByRoomId(roomId: string): Promise<Messages[]> {
+  async listMessagesByRoomId(roomId?: string): Promise<Messages[]> {
     const messages = await client.messages.findMany({
       where: {
         roomId,

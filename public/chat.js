@@ -28,22 +28,14 @@ document.getElementById(
 ).innerHTML = `Olá ${username} - Você está na sala: ${room}`;
 
 socket.emit(
-  "access_chat",
-  {
-    username,
-  },
-  (data) => {
-    user = data;
-  }
-);
-
-socket.emit(
   "select_room",
   {
     username,
     room,
   },
-  (messages) => {
+  (messages, data) => {
+    user = data;
+
     messages.forEach((message) => {
       createMessage(message);
     });

@@ -9,13 +9,13 @@ export class UsersServices {
   }
 
   async create(username: string): Promise<Users | null> {
-    const userExists = await this.usersRepository.findByName(username);
-
-    if (userExists) {
-      return userExists;
-    }
-
     const user = await this.usersRepository.create(username);
+
+    return user;
+  }
+
+  async findByUsername(username: string): Promise<Users | null> {
+    const user = await this.usersRepository.findByName(username);
 
     return user;
   }

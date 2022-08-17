@@ -13,24 +13,12 @@ export class ConnectionsService {
     socketId,
     userId,
   }: ICreateConnection): Promise<Connections | null> {
-    const connectionExists =
-      await this.connectionsRepository.findByConnectionUserId(userId);
+    const connection = await this.connectionsRepository.create({
+      socketId,
+      userId,
+    });
 
-    if (connectionExists) {
-      const { id, socket_id } = connectionExists;
-
-      const connectionUpdate =
-        await this.connectionsRepository.updateConnection({ id, socket_id });
-
-      return connectionUpdate;
-    } else {
-      const connection = await this.connectionsRepository.create({
-        socketId,
-        userId,
-      });
-
-      return connection;
-    }
+    return connection;
   }
 
   async updateSocketId(id: string, socket_id: string): Promise<Connections> {

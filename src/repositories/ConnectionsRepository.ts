@@ -22,8 +22,8 @@ export class ConnectionsRepository {
   }
 
   async updateConnection({
-    socket_id,
     id,
+    socket_id,
   }: IUpdateConnection): Promise<Connections> {
     const connection = await client.connections.update({
       where: {
