@@ -1,5 +1,6 @@
-import { ILogoutConnection } from "../../dtos/ILogoutConnection";
 import { ConnectionsService } from "../../services/ConnectionsService";
+
+import { ILogoutConnection } from "../../dtos/ILogoutConnection";
 
 export default async ({ userId }: ILogoutConnection) => {
   const connectionsServices = ConnectionsService.getInstance();

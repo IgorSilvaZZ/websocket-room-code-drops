@@ -1,9 +1,11 @@
 import { Socket } from "socket.io";
-import { IDataSelectRoom } from "../../dtos/IDataSelectRoom";
+
 import { ConnectionsService } from "../../services/ConnectionsService";
 import { MessagesService } from "../../services/MessagesService";
 import { RoomsService } from "../../services/RoomsService";
 import { UsersServices } from "../../services/UsersService";
+
+import { IDataSelectRoom } from "../../dtos/IDataSelectRoom";
 
 export default async (
   socket: Socket,
